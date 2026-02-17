@@ -21,6 +21,8 @@
     </div>
 
     <script>
+      const API_BASE = "https://youtube-downloader-v0hv.onrender.com/";
+      
       async function postAndDownload(endpoint) {
         const url = document.getElementById("url").value.trim();
         if (!url) {
@@ -28,7 +30,7 @@
           return;
         }
 
-        const res = await fetch(endpoint, {
+        const res = await fetch(`${API_BASE}${endpoint}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url }),
@@ -71,3 +73,4 @@
     </script>
   </body>
 </html>
+
