@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/static/style.css" />
+    <meta charset="UTF-8" />
+    <title>YT Downloader</title>
+  </head>
+  <body>
+    <div class="app">
+      <h1>YouTube downloader</h1>
+
+      <label class="field">
+        <span>Youtube link</span>
+        <input id="url" placeholder="https://www.youtube.com/..." />
+      </label>
+
+      <div class="buttons">
+        <button id="btnVideo">Download video (1080p)</button>
+        <button id="btnAudio">Download MP3</button>
+      </div>
+    </div>
+
+    <script>
+      async function postAndDownload(endpoint) {
+        const url = document.getElementById("url").value.trim();
+        if (!url) {
+          alert("Unesi YouTube link.");
+          return;
+        }
+
+        const res = await fetch(endpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url }),
+        });
+
+        if (!res.ok) {
+          let msg = "Greška pri downloadu.";
+          try {
+            const data = await res.json();
+            if (data.error) msg = data.error;
+          } catch (_) {}
+          alert(msg);
+          return;
+        }
+
+        // preuzmi odgovor kao fajl
+        const blob = await res.blob();
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+
+        // probaj izvući ime iz headera, fallback na generičko
+        const cd = res.headers.get("Content-Disposition");
+        let filename = "download";
+        if (cd && cd.includes("filename=")) {
+          filename = cd.split("filename=")[1].replace(/["']/g, "");
+        }
+        a.download = filename;
+
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
+      }
+
+      document.getElementById("btnVideo").onclick = () =>
+        postAndDownload("/download");
+
+      document.getElementById("btnAudio").onclick = () =>
+        postAndDownload("/download-audio");
+    </script>
+  </body>
+</html>
